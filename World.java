@@ -8,18 +8,22 @@ abstract class Animal implements Comparable<Animal>{
 	protected int[] coords;
 	protected int timeS;
 	protected int isdead;
+	protected Grassland g1;
+	protected Grassland g2;
 
-	public Animal(int h,int x,int y,int ts){
+	public Animal(int h,int x,int y,int ts,Grassland g1,Grassland g2){
 		this.health=h;
 		this.coords=new int[2];
 		coords[0]=x;
 		coords[1]=y;
 		int timeS=ts;
+		this.g1=g1;
+		this.g2=g2;
 		isdead=1;
 	}
 
 	public int compareTo(Animal a2){
-		
+
 
 
 
@@ -58,10 +62,40 @@ abstract class Animal implements Comparable<Animal>{
 	public abstract void takeT();
 }
 
-class herbivore extends Animal{
+class Herbivore extends Animal{
+	int capH;
+	Carnivore car1;
+	Carnivore car2;
+	public Herbivore(int h,int x,int y,int ts,Grassland g1,Grassland g2,int capH,Carnivore c1,Carnivore c2){
+		super(h,x,y,ts,g1,g2);
+		this.capH=capH;
+		car1=c1;
+		car2=c2;
+	}
+
+	@Override
+	public void takeT(){
+
+	}
 
 }
-class grassland{
+
+class Carnivore extends Animal{
+	Herbivore her1;
+	Herbivore her2;
+
+	public Carnivore(int h.int x,int y,int ts,Grassland g1,Grassland g2,Herbivore h1,Herbivore h2){
+		super(h,x,y,ts,g1,g2,h1,h2);
+		her1=h1;
+		her2=h2;
+	}
+	@Override
+	public void takeT(){
+		
+	}
+
+}
+class Grassland{
 	protected int availability;
 	protected final int[] coordinates;
 	protected final int radius;
