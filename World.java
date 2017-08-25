@@ -2,6 +2,65 @@
 import java.io.*;
 import java.util.*;
 
+
+abstract class Animal implements Comparable<Animal>{
+	protected int health;
+	protected int[] coords;
+	protected int timeS;
+	protected int isdead;
+
+	public Animal(int h,int x,int y,int ts){
+		this.health=h;
+		this.coords=new int[2];
+		coords[0]=x;
+		coords[1]=y;
+		int timeS=ts;
+		isdead=1;
+	}
+
+	public int compareTo(Animal a2){
+		
+
+
+
+	}
+
+	public int is_dead(){
+		return isdead;
+	}
+
+	public int[] showC(){
+		return coords;
+	}
+
+	public int showH(){
+		return health;
+	}
+
+	public void updateC(int[] newC){
+		coords[0]=newC[0];
+		coords[1]=newC[1];
+	}
+
+	public void newTS(int t){
+		timeS=t;
+	}
+
+	public int updateH(int h){
+		health=h;
+	}
+
+
+	public void setDeath(){
+		isdead=0;
+	}
+
+	public abstract void takeT();
+}
+
+class herbivore extends Animal{
+
+}
 class grassland{
 	protected int availability;
 	protected final int[] coordinates;
@@ -35,11 +94,15 @@ class grassland{
 }
 
 public class World{
+
 	static int keeptime;
+	
 	public static void main(String[] args)throws IOException{
 		Scanner rd=new Scanner(System.in);
 		System.out.println("Enter Total Final Time for Simulation: ");
+		
 		keeptime=rd.nextInt();
+		
 		System.out.println("Enter x,y centre, radius and Grass Available for First Grassland: ");
 		
 		int xcoord1=rd.nextInt();
@@ -95,6 +158,7 @@ public class World{
 
 		System.out.println("The Simulation Begins-");
 
+		//main loop
 
 	}	
 }
