@@ -17,35 +17,38 @@ abstract class Animal implements Comparable<Animal>{
 		this.coords=new int[2];
 		coords[0]=x;
 		coords[1]=y;
-		int timeS=ts;
+		timeS=ts;
+		
 		this.g1=g1;
 		this.g2=g2;
 		isdead=1;
 	}
 	protected abstract void settype();
+
+	@Override
 	public int compareTo(Animal a2){
 		if(showTS()<a2.showTS()){
-			return 1;
+			return -1;
 		}
 		else if(showTS()>a2.showTS()){
-			return -1;
+			return 1;
 		}
 
 		else{
 			if(showH()<a2.showH()){
-				return -1;
+				return 1;
 			}
 			else if(showH()>a2.showH()){
-				return 1;
+				return -1;
 			}
 			else{
 				if(getClass()==a2.getClass()){
-					int[] origin={0,0};
-					if(getDistance(origin)<a2.getDistance(origin)){
-						return 1;
-					}
-					else if(getDistance(origin)<a2.getDistance(origin)){
+					//int[] origin={0,0};
+					if(getDistance(0,0)<a2.getDistance(0,0)){
 						return -1;
+					}
+					else if(getDistance(0,0)<a2.getDistance(0,0)){
+						return 1;
 					}
 					else{
 						return 0;
@@ -54,10 +57,10 @@ abstract class Animal implements Comparable<Animal>{
 				}
 
 				else if(this.type==0){
-					return 1;
+					return -1;
 				}
 				else{
-					return -1;	
+					return 1;	
 				}
 			}
 		}
@@ -72,8 +75,13 @@ abstract class Animal implements Comparable<Animal>{
 		return isdead;
 	}
 
-	public int[] showC(){          // returns current coordinates
-		return coords;
+	public int showCx(){
+	        // returns current coordinates
+		return coords[0];
+	}
+	public int showCy(){
+	        // returns current coordinates
+		return coords[1];
 	}
 
 	public float showH(){    //returns current health
@@ -81,11 +89,12 @@ abstract class Animal implements Comparable<Animal>{
 	}
 
 	public int showTS(){
+		//System.out.println(timeS);
 		return timeS;
 	}
-	public void updateC(int[] newC){
-		coords[0]=newC[0];
-		coords[1]=newC[1];
+	public void updateC(int newCx,int newCy){
+		coords[0]=newCx;
+		coords[1]=newCy;
 	}
 
 	public void newTS(int t){
@@ -98,12 +107,12 @@ abstract class Animal implements Comparable<Animal>{
 
 
 	public void setDeath(){
-		System.out.println(toString()+"is dead.");
+		//System.out.println(toString()+"is dead.");
 		isdead=0;
 	}
 
-	public int getDistance(int[] point){
-		double t=(double)((coords[0]-point[0])*(coords[0]-point[0])+(coords[1]-point[1])*(coords[1]-point[1]));
+	public int getDistance(int pointx,int pointy){
+		double t=(double)((coords[0]-pointx)*(coords[0]-pointx)+(coords[1]-pointy)*(coords[1]-pointy));
 		int val=(int)Math.floor(Math.sqrt(t));
 		return val;
 
@@ -111,8 +120,8 @@ abstract class Animal implements Comparable<Animal>{
 
 	public boolean inGrassland(){
 		
-		int d1=getDistance(g1.getCoords());
-		int d2=getDistance(g2.getCoords());
+		int d1=getDistance(g1.getCoordx(),g1.getCoordy());
+		int d2=getDistance(g2.getCoordx(),g2.getCoordy());
 
 		if(d1<=g1.getRadius() || d2<=g2.getRadius()){
 			return true;
@@ -121,8 +130,8 @@ abstract class Animal implements Comparable<Animal>{
 
 	}
 	protected Grassland showGrass(){
-		int d1=getDistance(g1.getCoords());
-		int d2=getDistance(g2.getCoords());
+		int d1=getDistance(g1.getCoordx(),g1.getCoordy());
+		int d2=getDistance(g2.getCoordx(),g2.getCoordy());
 		if(inGrassland()){
 			if(d1<=g1.getRadius()){
 				return g1;
@@ -141,23 +150,21 @@ abstract class Animal implements Comparable<Animal>{
 			}
 		}
 	}
-	protected void runToward(int steps,int[] point){
-		int d=getDistance(point);
+	protected void runToward(int steps,int pointx,int pointy){
+		int d=getDistance(pointx,pointy);
 		d=d-steps;
-		int valx=(int)(steps*point[0]+d*coords[0])/(steps+d);
-		int valy=(int)(steps*point[0]+d*coords[0])/(steps+d);
-		coords[0]=valx;
-		coords[1]=valy;
+		int valx=(int)(steps*pointx+d*coords[0])/(steps+d);
+		int valy=(int)(steps*pointy+d*coords[1])/(steps+d);
+		updateC(valx,valy);
 
 	}
 
-	protected void runAway(int steps,int[] point){
-		int d=getDistance(point);
+	protected void runAway(int steps,int pointx,int pointy){
+		int d=getDistance(pointx,pointy);
 		d=d+steps;
-		int valx=(int)(((d*coords[0])-(steps*point[0]))/(d-steps));
-		int valy=(int)(((d*coords[1])-(steps*point[1]))/(d-steps));
-		coords[0]=valx;
-		coords[1]=valy;
+		int valx=(int)(((d*coords[0])-(steps*pointx))/(d-steps));
+		int valy=(int)(((d*coords[1])-(steps*pointy))/(d-steps));
+		updateC(valx,valy);
 	}
 
 	public abstract int takeT();
@@ -167,19 +174,21 @@ abstract class Animal implements Comparable<Animal>{
 }
 
 class Herbivore extends Animal{
-	int capH;
-	Carnivore car1;
-	Carnivore car2;
-	int gTurn;
-	static int nHerbivore;
+	protected int capH;
+	protected Carnivore car1;
+	protected Carnivore car2;
+	protected int gTurn;
+	protected static int nHerbivore;
+	protected int ndata;
 	
 
-	public Herbivore(int h,int x,int y,int ts,Grassland g1,Grassland g2,int capH){
+	public Herbivore(float h,int x,int y,int ts,Grassland g1,Grassland g2,int capH){
 		super(h,x,y,ts,g1,g2);
 		this.capH=capH;
 		//car1=c1;
 		//car2=c2;
 		nHerbivore+=1;
+		ndata=nHerbivore;
 		settype();
 	}
 
@@ -197,7 +206,7 @@ class Herbivore extends Animal{
 		if(inGrassland()){
 			gTurn=0;
 		}
-		else if(gTurn>7){
+		else if(gTurn>=7){
 			updateH(health-5);
 			gTurn+=1;
 		}
@@ -206,8 +215,8 @@ class Herbivore extends Animal{
 	
 
 	protected Carnivore showCar(){
-		int d1=getDistance(car1.showC());
-		int d2=getDistance(car2.showC());
+		int d1=getDistance(car1.showCx(),car1.showCy());
+		int d2=getDistance(car2.showCx(),car2.showCy());
 		if(d1<d2 && car1.is_dead()==1){
 			return car1;
 
@@ -235,11 +244,11 @@ class Herbivore extends Animal{
 						g=g1;
 					}
 
-					runToward(5,g.getCoords());
+					runToward(5,g.getCoordx(),g.getCoordy());
 
 				}
 				else{ //currently in forest
-					runToward(5,showGrass().getCoords());
+					runToward(5,showGrass().getCoordx(),showGrass().getCoordy());
 
 				}
 			}
@@ -252,8 +261,11 @@ class Herbivore extends Animal{
 					g.updateA(g.getA()-capH);
 				}
 				else{
-					updateH(health+health/5);
-					g.updateA(0);
+					if(g.getA()>0){
+						updateH(health+health/5);
+						g.updateA(0);
+					}
+					
 				}
 				}
 
@@ -277,7 +289,7 @@ class Herbivore extends Animal{
 						updateH(health-25);
 						int prob2=rand.nextInt(2)+1;
 						if(prob2==1){
-							runAway(2,showCar().showC());
+							runAway(2,showCar().showCx(),showCar().showCy());
 						}
 						else{
 							if(g==g1){
@@ -286,7 +298,7 @@ class Herbivore extends Animal{
 							else{
 								g=g1;
 							}
-							runToward(3,g.getCoords());
+							runToward(3,g.getCoordx(),g.getCoordy());
 						}
 					}
 					
@@ -297,15 +309,18 @@ class Herbivore extends Animal{
 					int prob=rand.nextInt(10)+1;         // not enough grass
 					
 					if (prob<=2){
-						updateH(health+health/5);
-						g.updateA(0);//stays +eats +health	
+						if(g.getA()>0){
+							updateH(health+health/5);
+							g.updateA(0);//stays +eats +health
+						}
+							
 					}
 					else{
 						updateH(health-25); //does not stay
 						int prob2=rand.nextInt(10)+1;
 						
 						if(prob2<=7){
-							runAway(4,showCar().showC());//runs carnivore +4 steps
+							runAway(4,showCar().showCx(),showCar().showCy());//runs carnivore +4 steps
 						}
 						else{
 							if(g==g1){
@@ -314,7 +329,7 @@ class Herbivore extends Animal{
 							else{
 								g=g1;
 							}
-							runToward(2,g.getCoords());  //other grassland +2 step
+							runToward(2,g.getCoordx(),g.getCoordy());  //other grassland +2 step
 						}
 					}
 				}
@@ -325,11 +340,11 @@ class Herbivore extends Animal{
 				if(prob>1){
 					int prob2=rand.nextInt(20)+1;
 					if(prob2<=13){
-						runToward(5,showGrass().getCoords());
+						runToward(5,showGrass().getCoordx(),showGrass().getCoordy());
 						//to grassland-5 steps
 					}
 					else{
-						runAway(4,showCar().showC());
+						runAway(4,showCar().showCx(),showCar().showCy());
 						//away from carnivore
 					}
 				}
@@ -346,7 +361,7 @@ class Herbivore extends Animal{
 
 	@Override
 	public String toString(){
-		return "Herbivore "+nHerbivore;
+		return "Herbivore "+ndata;
 	}
 
 }
@@ -356,19 +371,23 @@ class Carnivore extends Animal{
 	protected Herbivore her1;
 	protected Herbivore her2;
 	protected int hTurn;
-	
+	protected int ndata;
 
 	public Carnivore(float h,int x,int y,int ts,Grassland g1,Grassland g2){
 		super(h,x,y,ts,g1,g2);
 		//her1=h1;
 		//her2=h2;
 		nCarnivore+=1;
+		ndata=nCarnivore;
 		settype();
 	}
 
 	public void setHerbivores(Herbivore h1,Herbivore h2){
 		her1=h1;
 		her2=h2;
+		// System.out.println(her1);
+		// System.out.println(her2);
+		
 	}
 
 	@Override
@@ -378,7 +397,7 @@ class Carnivore extends Animal{
 	@Override
 	public void uTurn(){
 		Herbivore h=showHerb();
-		int d=getDistance(h.showC());
+		int d=getDistance(h.showCx(),h.showCy());
 		if(d<=5){
 			hTurn=0;
 		}
@@ -390,8 +409,11 @@ class Carnivore extends Animal{
 		}
 	}
 	protected Herbivore showHerb(){
-		int d1=getDistance(her1.showC());
-		int d2=getDistance(her2.showC());
+		// int[] temp1=her1.showC();
+		// int[] temp2=her2.showC();
+		// System.out.println(temp1[1]);
+		int d1=getDistance(her1.showCx(),her1.showCy());
+		int d2=getDistance(her1.showCx(),her1.showCy());
 		if(d1<d2 && her1.is_dead()==1){
 			return her1;
 
@@ -399,6 +421,7 @@ class Carnivore extends Animal{
 		else{
 			return her2;
 		}
+		//return her1;
 	}
 
 	@Override
@@ -416,7 +439,7 @@ class Carnivore extends Animal{
 		}
 		else{                  //not all dead
 			Herbivore h=showHerb();
-			int d=getDistance(h.showC());
+			int d=getDistance(h.showCx(),h.showCy());
 			if(d<=1){   //kills herbivore
 				updateH(health+h.showH()*2/3);
 				h.setDeath();
@@ -429,7 +452,7 @@ class Carnivore extends Animal{
 						updateH(health-30);
 					}
 					else{        // does not stay
-						runToward(2,showHerb().showC());						
+						runToward(2,showHerb().showCx(),showHerb().showCy());						
 					}
 
 				}
@@ -440,7 +463,7 @@ class Carnivore extends Animal{
 						updateH(health-60);
 					}
 					else{  //does not stay
-						runToward(4,showHerb().showC());
+						runToward(4,showHerb().showCx(),showHerb().showCy());
 					}
 
 
@@ -457,7 +480,7 @@ class Carnivore extends Animal{
 
 	@Override
 	public String toString(){
-		return "Carnivore "+nCarnivore;
+		return "Carnivore "+ndata;
 	}
 
 }
@@ -474,8 +497,12 @@ class Grassland{
 		this.radius=r;
 	}
 
-	public int[] getCoords(){
-		return coordinates;
+	public int getCoordx(){
+		return coordinates[0];
+	}
+
+	public int getCoordy(){
+		return coordinates[1];
 	}
 
 	public int getRadius(){
@@ -496,6 +523,7 @@ class Grassland{
 public class World{
 
 	static int keeptime;
+	static int maxTS;
 	
 	public static void main(String[] args)throws IOException{
 		Scanner rd=new Scanner(System.in);
@@ -510,7 +538,7 @@ public class World{
 		int radii1=rd.nextInt();
 		int units1=rd.nextInt();
 
-		grassland g1=new grassland(units1,xcoord1,ycoord1,radii1);
+		Grassland g1=new Grassland(units1,xcoord1,ycoord1,radii1);
 		
 		System.out.println("Enter x,y centre, radius and Grass Available for Second Grassland: ");
 		
@@ -519,7 +547,7 @@ public class World{
 		int radii2=rd.nextInt();
 		int units2=rd.nextInt();
 		
-		grassland g2=new grassland(units2,xcoord2,ycoord2,radii2);
+		Grassland g2=new Grassland(units2,xcoord2,ycoord2,radii2);
 
 		System.out.println("Enter Health and Grass Capacity for Herbivores: ");
 		int healthH=rd.nextInt();
@@ -530,14 +558,16 @@ public class World{
 		int y1=rd.nextInt();
 		int ts1=rd.nextInt();
 
-		//instantiate first herbivore
+		Herbivore h1=new Herbivore((float)healthH,x1,y1,ts1,g1,g2,eatingH);//instantiate first herbivore
+		maxTS=Math.max(ts1,maxTS);
 
 		System.out.println("Enter x,y position and timestamp for Second Herbivore: ");
 		int x2=rd.nextInt();
 		int y2=rd.nextInt();
 		int ts2=rd.nextInt();
 
-		//instantiate second herbivore
+		Herbivore h2=new Herbivore((float)healthH,x2,y2,ts2,g1,g2,eatingH);//instantiate second herbivore
+		maxTS=Math.max(ts2,maxTS);
 
 		System.out.println("Enter Health for Carnivores: ");
 		int healthC=rd.nextInt();
@@ -547,16 +577,66 @@ public class World{
 		int y1c=rd.nextInt();
 		int ts1c=rd.nextInt();
 
-		//instantiate first carnivore
+		Carnivore c1=new Carnivore((float)healthC,x1c,y1c,ts1c,g1,g2);//instantiate first carnivore
+		maxTS=Math.max(ts1c,maxTS);
 
 		System.out.println("Enter x,y position and timestamp for Second Carnivore: ");
 		int x2c=rd.nextInt();
 		int y2c=rd.nextInt();
 		int ts2c=rd.nextInt();
 
-		//instanciate second herbivore
+		Carnivore c2=new Carnivore((float)healthC,x2c,y2c,ts2c,g1,g2);//instanciate second herbivore
+		maxTS=Math.max(ts2c,maxTS);
+
+		h1.setCarnivores(c1,c2);
+		h2.setCarnivores(c1,c2);
+		c1.setHerbivores(h1,h2);
+		c1.setHerbivores(h1,h2);
 
 		System.out.println("The Simulation Begins-");
+
+		PriorityQueue<Animal> q1=new PriorityQueue<Animal>();
+
+		q1.add(h1);
+		q1.add(h2);
+		q1.add(c1);
+		q1.add(c2);
+
+		int count=0;
+
+		while(q1.peek()!=null || count<=keeptime){
+			Animal temp=q1.remove();
+			System.out.println("It is turn of "+temp+".");
+			int v=temp.takeT();
+			if (v==1){
+				System.out.println("It's health after taking turn is "+temp.showH()+".");
+				Random rant=new Random();
+				int t=rant.nextInt(keeptime-maxTS)+maxTS+1;
+				temp.newTS(t);
+				maxTS=Math.max(maxTS,t);
+				q1.add(temp);
+			}
+			else{
+				System.out.println("It is dead.");
+			}
+			count+=1;
+		}
+
+		
+		// Animal head=q1.remove();
+		// System.out.println(head+" "+head.showTS());
+
+		// Animal head2=q1.remove();
+		// System.out.println(head2+" "+head2.showTS());
+
+		// Animal head3=q1.remove();
+		// System.out.println(head3+" "+head3.showTS());
+
+		// Animal head4=q1.remove();
+		// System.out.println(head4+" "+head4.showTS());
+		// // for(Animal a:q1){
+		// 	System.out.println(a);
+		// }
 
 		//main loop
 
