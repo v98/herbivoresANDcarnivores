@@ -615,12 +615,39 @@ public class World2{
 
 		System.out.println("The Simulation Begins-");
 
+		
+
 		PriorityQueue<Animal> q1=new PriorityQueue<Animal>();
 
-		q1.add(h1);
-		q1.add(h2);
-		q1.add(c1);
-		q1.add(c2);
+		if(h1.showTS()>=keeptime){
+			h1.setDeath();
+		}
+		else{
+			q1.add(h1);
+		}
+
+		if(h2.showTS()>=keeptime){
+			h2.setDeath();
+		}
+		else{
+			q1.add(h2);
+		}
+
+		if(c1.showTS()>=keeptime){
+			c1.setDeath();
+		}
+		else{
+			q1.add(c1);
+		}
+
+		if(c2.showTS()>=keeptime){
+			c2.setDeath();
+		}
+		else{
+			q1.add(c2);
+		}
+
+		
 
 		int count=0;
 		Iterator itr=q1.iterator();
